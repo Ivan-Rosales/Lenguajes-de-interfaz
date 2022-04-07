@@ -27,7 +27,7 @@ lcd = GpioLcd(rs_pin=Pin(8),
               num_lines=2, num_columns=16)
 
 while True:
-    rdr = MFRC522(spi, sda, rst)
+    
     (stat, tag_type) = rdr.request(rdr.REQIDL)
     if stat == rdr.OK:
         led.value(1)

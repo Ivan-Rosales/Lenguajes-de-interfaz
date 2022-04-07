@@ -1,5 +1,4 @@
 from LCD import LCD
-from RFID import RFID
 from machine import Pin, SPI
 import time
 
@@ -17,5 +16,10 @@ MISO = Pin(19, Pin.OUT)
 SDA = Pin(16, Pin.OUT)
 RST = Pin(20, Pin.OUT)
     
-pantalla = LCD(RS=RS, RW=RW, EN=EN, D4=D4, D5=D5, D6=D6, D7=D7)
-antena = RFID(SCK=SCK, MOSI=MOSI, MISO=MISO, SDA=SDA, RST=RST)
+for i in range(100000000):
+    pantalla = LCD(RS=RS, RW=RW, EN=EN, D4=D4, D5=D5, D6=D6, D7=D7)
+    pantalla.set_string(str(i))
+    print({
+        "data": i
+        })
+    time.sleep(2)
