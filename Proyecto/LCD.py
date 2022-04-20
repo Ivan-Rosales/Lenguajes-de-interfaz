@@ -6,8 +6,6 @@ import utime
 class LCD:
     num_lines = 2
     num_columns = 16
-    cursor_x = 0
-    cursor_y = 0
 
     def __init__(self, RS, RW, EN, D4, D5, D6, D7):
         self.RS: Pin = RS
@@ -77,8 +75,6 @@ class LCD:
         self.write_command(0x01, 1520) # limpia la pantalla
         self.write_command(0x02, 1520) # posiciona el cursor en (0, 0)
         self.write_command(0b1100, 37) # Display encendido
-        self.cursor_x = 0
-        self.cursor_y = 0
         
     def write_data(self, value):
         self.RS.value(1) # informacion
@@ -87,24 +83,26 @@ class LCD:
         utime.sleep_us(37)
         self.write_4bits(value)
         
-    def set_char(self, char):
-        self.write_data(ord(char)) # carga el caracter en la RAM
+    def set_char(self, char, col, row):
+        char = char[0]
 
-        self.cursor_x += 1      
-        if self.num_columns == self.cursor_x:
-            self.cursor_x = 0
-            self.cursor_y = int(not self.cursor_y)
+        if not 0x00<=col<=0xF:
+            raise IndexError("Columna fuera de rango") 
+        if not 0x00<=row<=0x01:
+            raise IndexError("Fila fuera de rango") 
         
-        cmd = 0x80 | self.cursor_x # 0x80 set RAM | Define la columna en la cual se escribe
-        if self.cursor_y == 1:
+        self.write_data(ord(char)) # carga el caracter en la RAM
+        
+        cmd = 0x80 | col # 0x80 set RAM | Define la columna en la cual se escribe
+        if row == 1:
             cmd |= 0x40 # Define la fila en la cual se escribe
         self.write_command(cmd, 37)
         
         
     def set_string(self, string, ow=False):
-        string = string if ow else string[0:32] # Recorta el tamaño de la string si se requiere
-        for char in string:
-            self.set_char(char)
+        self.clear()
+        string = string if ow else string[0:32] # Recorta el tamaño de la string si se requiere}
+        for index,char in enumerate(string):
+            self.set_char(char, index+1, 0)
             
             
-
