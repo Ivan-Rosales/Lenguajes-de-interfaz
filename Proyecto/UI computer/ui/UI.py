@@ -1,5 +1,3 @@
-import sys
-import time
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5 import uic
 
@@ -23,14 +21,14 @@ class Main(QMainWindow):
                 f"Num. Control: {request[0]}\n"\
                 f"Bienvenido, {request[1]}"
             )
-            return request[1]
+            return True
         else:
             self.state.setText(
                 f"Acceso denegado\n"\
                 f"Num. Control: {res['num_control']}\n"\
                 f"Contraseña: {res['password']}"
             )
-            return "False"
+            return False
 
     def connect_functions(self):
         self.pushButton.clicked.connect(self.show_conf)

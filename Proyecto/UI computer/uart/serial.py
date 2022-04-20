@@ -1,10 +1,10 @@
 import json
-import time
 import serial
 import threading
 
 
 class Serial:
+    active = True
 
     def __init__(self, port, baud, function):
         self.port = port
@@ -16,12 +16,12 @@ class Serial:
         watchdog.start()
 
     def watchdog(self):
-        while True:
+        while self.active:
             try:
                 if self.con.in_waiting:
                     data_1 = self.con.readline().decode('ascii')
                     data = json.loads(data_1)
                     response = self.function(data)
-                    time.sleep(1)
+                    self.con.write(str(response)[0].encode())
             except json.decoder.JSONDecodeError as e:
-                print(e)
+                self.function({'num_control': '', 'password': ''})
