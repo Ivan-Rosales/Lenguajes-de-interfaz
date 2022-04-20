@@ -1,9 +1,7 @@
-from ast import arg
 import json
+import time
 import serial
 import threading
-
-from database.database import DB
 
 
 class Serial:
@@ -13,8 +11,6 @@ class Serial:
         self.baud = baud
         self.con = serial.Serial(port, baud, timeout=0)
         self.function = function
-
-    def activate(self):
         watchdog = threading.Thread(target=self.watchdog)
         watchdog.setDaemon(True)
         watchdog.start()
@@ -23,7 +19,9 @@ class Serial:
         while True:
             try:
                 if self.con.in_waiting:
-                    data = json.loads(self.con.readline().decode('ascii'))
-                    self.function(data)
-            except json.decoder.JSONDecodeError:
-                pass
+                    data_1 = self.con.readline().decode('ascii')
+                    data = json.loads(data_1)
+                    response = self.function(data)
+                    time.sleep(1)
+            except json.decoder.JSONDecodeError as e:
+                print(e)

@@ -1,38 +1,35 @@
-"""import serial, sqlite3, json, time
-from tkinter import Tk
+from socket import timeout
+import time
+from PyQt5.QtWidgets import QApplication
 
-port = "COM7"
-baud = 112500
+import sys
 
-con_micro = serial.Serial(port, baud, timeout=0)
-con_datab = sqlite3.connect("app.db")
-cur = con_datab.cursor()
-
-while True:
-    try:
-        if3 con_micro.in_waiting:
-            user = json.loads(con_micro.readline().decode('ascii'))
-            data = cur.execute(f"SELECT * FROM user WHERE num_control='{user['num_control']}' and password='{user['password']}'")
-            
-            result = data.fetchall()
-
-            if len(result) == 1:
-                c
-            else:
-                print(f"Acceso denegado")
-    except json.decoder.JSONDecodeError:
-        pass
-"""
-from pip import main
-from ui.UI import init
+from ui.UI import Main
 from uart.serial import Serial
 from database.database import DB
 
 
 if __name__ == '__main__':
+    """
     db = DB()
-    main = init(db)
+    app = QApplication(sys.argv)
+    main = Main(db)
     serial = Serial("COM7", 112500, main.set_string)
+    main.show()
+    app.exec()
+    """
+    import serial
 
-    serial.activate()
-    main.start()
+    con = serial.Serial("COM7", 115200)
+    
+    con.write(b"ABCD")
+    res = con.readline()
+    print(res)
+
+    con.close()
+    """
+    while True:
+        if con.in_waiting:
+            data = con.readline().decode('ascii')
+            print(data)
+    """
