@@ -5,7 +5,6 @@ from LCD import LCD
 from mfrc522 import MFRC522
 
 state = Pin(25, Pin.OUT)
-state.value(1)
 
 # lcd
 RS = Pin(9, Pin.OUT)
@@ -26,7 +25,6 @@ spi = SPI(0, baudrate=100000, polarity=0, phase=0, sck=sck, mosi=mosi, miso=miso
 
 sda = Pin(17, Pin.OUT)
 rst = Pin(22, Pin.OUT)
-rdr = MFRC522(spi, sda, rst)
 
 # usb serial port
 poll = select.poll()
@@ -38,16 +36,19 @@ false = Pin(27, Pin.OUT)
 state = Pin(25, Pin.OUT)
 
 
-state.value(0)
 while True:
     try:
+        rdr = MFRC522(spi, sda, rst)
+        
         (stat, tag_type) = rdr.request(rdr.REQIDL)
+        
         if stat == rdr.OK:
             (stat, raw_uid) = rdr.anticoll()
             if stat == rdr.OK:
-                print(rdr.read_data())
-                
                 state.value(1)
+                print(rdr.read_data())
+                state.value(0)
+
                 wait = poll.poll()
                 res = wait[0][0].read(32)
                 state.value(0)
@@ -59,22 +60,14 @@ while True:
                     true.value(1)
                     pantalla.set_string(res)
                 
-                #rdr.reset()
                 utime.sleep(1)
                 true.value(0)
                 false.value(0)
                 pantalla.clear()
     except KeyboardInterrupt:
         break
-    except:
-        state.value(1)
-        utime.sleep(2.5)
-        state.value(0)
-        utime.sleep(0.5)
-        state.value(1)
-        utime.sleep(2.5)
-        state.value(0)
-        utime.sleep(0.5)
-        state.value(1)
-        utime.sleep(2.5)
-        state.value(0)
+    except Exception as e:
+        print(e)
+        true.value(1)
+        false.value(1)
+        utime.sleep(3)

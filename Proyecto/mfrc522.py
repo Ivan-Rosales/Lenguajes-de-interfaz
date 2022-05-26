@@ -194,18 +194,6 @@ class MFRC522:
         data += self._crc(data)
         (stat, recv, _) = self._tocard(0x0C, data)
         return recv if stat == self.OK else None
-    
-    def read_data(self):
-        string = ""
-        for i in range(6, 136, 4):
-            data = self.read(i)
-            if data:
-                for j in data:
-                    char = (str(binascii.unhexlify("%02x" % j))[2:])[:-1]
-                    if not len(char) == 1:
-                        return string[1:]
-                    else:
-                        string += char
 
     def write(self, addr, data):
 
@@ -225,3 +213,17 @@ class MFRC522:
                 stat = self.ERR
 
         return stat
+    
+    def read_data(self):
+        string = ""
+        for i in range(6, 136, 4):
+            data = self.read(i)
+            if data:
+                for j in data:
+                    char = (str(binascii.unhexlify("%02x" % j))[2:])[:-1]
+                    if not len(char) == 1:
+                        return string[1:]
+                    else:
+                        string += char
+            else:
+                break
