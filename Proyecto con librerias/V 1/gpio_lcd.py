@@ -81,13 +81,13 @@ class GpioLcd(LcdApi):
 
         sleep_ms(20)   # Allow LCD time to powerup
         # Send reset 3 times
-        self.hal_write_init_nibble(self.LCD_FUNCTION_RESET)
+        self.hal_write_init_nibble(0x30)
         sleep_ms(5)    # need to delay at least 4.1 msec
-        self.hal_write_init_nibble(self.LCD_FUNCTION_RESET)
+        self.hal_write_init_nibble(0x30)
         sleep_ms(1)
-        self.hal_write_init_nibble(self.LCD_FUNCTION_RESET)
+        self.hal_write_init_nibble(0x30)
         sleep_ms(1)
-        cmd = self.LCD_FUNCTION
+        cmd = 0x20
         if not self._4bit:
             cmd |= self.LCD_FUNCTION_8BIT
         self.hal_write_init_nibble(cmd)

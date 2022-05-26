@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="Images">
+    <file>Images/person-fill.svg</file>
+    <file>Images/down arrow.svg</file>
+    <file>Images/person-square.svg</file>
+  </qresource>
+</RCC>

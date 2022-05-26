@@ -6,6 +6,9 @@ import utime
 class LCD:
     num_lines = 2
     num_columns = 16
+    cursor_x = 0
+    cursor_y = 0
+    newline = False
 
     def __init__(self, RS, RW, EN, D4, D5, D6, D7):
         self.RS: Pin = RS
@@ -29,24 +32,21 @@ class LCD:
 
         utime.sleep_ms(20)
 
-        self.write_4bits(0x03 >> 4)
+        self.write_4bits(0x30 >> 4)
         utime.sleep_ms(5)
-        self.write_4bits(0x03 >> 4)
+        self.write_4bits(0x30 >> 4)
         utime.sleep_ms(1)
-        self.write_4bits(0x03 >> 4)
+        self.write_4bits(0x30 >> 4)
         utime.sleep_ms(1)
         
         self.write_4bits(0x02 >> 4)
         utime.sleep_ms(1)
         
-        self.write_command(0b1000, 37) # Display apagado
+        self.write_command(0x08)
         self.clear()
-        self.write_command(0b110, 37) 
-        self.write_command(0b1111, 37) # Display encendido
-        self.write_command(0b101000, 37) # Establece que seran dos lineas
-        
-        utime.sleep_ms(20)
-        self.clear()
+        self.write_command(0x06)
+        self.write_command(0x0C)
+        self.write_command(0x0C)
 
     def write_4bits(self, data):
         self.D7.value(data & 0x08)
@@ -61,48 +61,59 @@ class LCD:
         self.EN.value(1)
         utime.sleep_us(1)
         self.EN.value(0)
-        #utime.sleep_us(100)
+        utime.sleep_us(100)
 
-    def write_command(self, value, delay):
-        self.RS.value(0) # intruccion
-        self.RW.value(0) # escribir
+    def write_command(self, value):
+        self.RS.value(0)
+        self.RW.value(0)
         self.write_4bits(value >> 4)
-        utime.sleep_us(37)
         self.write_4bits(value)
-        utime.sleep_us(delay)
+        if value <= 3:
+            utime.sleep_ms(5)
         
     def clear(self):
-        self.write_command(0x01, 1520) # limpia la pantalla
-        self.write_command(0x02, 1520) # posiciona el cursor en (0, 0)
-        self.write_command(0b1100, 37) # Display encendido
+        self.write_command(0x01)
+        self.write_command(0x02)
+        self.cursor_x = 0
+        self.cursor_y = 0
         
     def write_data(self, value):
-        self.RS.value(1) # informacion
-        self.RW.value(0) # escribir
+        self.RS.value(1)
+        self.RW.value(0)
         self.write_4bits(value >> 4)
-        utime.sleep_us(37)
         self.write_4bits(value)
         
-    def set_char(self, char, col, row):
-        char = char[0]
-
-        if not 0x00<=col<=0xF:
-            raise IndexError("Columna fuera de rango") 
-        if not 0x00<=row<=0x01:
-            raise IndexError("Fila fuera de rango") 
+    def set_char(self, char):
+        if char == '\n':
+            if self.implied_newline:
+                pass
+            else:
+                self.cursor_x = self.num_columns
+        else:
+            self.write_data(ord(char))
+            self.cursor_x += 1
+        if self.cursor_x >= self.num_columns:
+            self.cursor_x = 0
+            self.cursor_y += 1
+            self.implied_newline = (char != '\n')
+        if self.cursor_y >= self.num_lines:
+            self.cursor_y = 0
+        self.move_to(self.cursor_x, self.cursor_y)
         
-        self.write_data(ord(char)) # carga el caracter en la RAM
+    def move_to(self, cursor_x, cursor_y):
+        self.cursor_x = cursor_x
+        self.cursor_y = cursor_y
+        addr = cursor_x & 0x3f
+        if cursor_y & 1:
+            addr += 0x40
+        if cursor_y & 2:
+            addr += self.num_columns
+        self.write_command(0x80 | addr)
         
-        cmd = 0x80 | col # 0x80 set RAM | Define la columna en la cual se escribe
-        if row == 1:
-            cmd |= 0x40 # Define la fila en la cual se escribe
-        self.write_command(cmd, 37)
-        
-        
-    def set_string(self, string, ow=False):
+    def set_string(self, string):
         self.clear()
-        string = string if ow else string[0:32] # Recorta el tamaño de la string si se requiere}
-        for index,char in enumerate(string):
-            self.set_char(char, index+1, 0)
+        string = string[0:32]
+        for char in string:
+            self.set_char(char)
             
             

@@ -4,6 +4,9 @@ import utime, select, sys
 from LCD import LCD
 from mfrc522 import MFRC522
 
+state = Pin(25, Pin.OUT)
+state.value(1)
+
 # lcd
 RS = Pin(9, Pin.OUT)
 RW = Pin(10, Pin.OUT)
@@ -32,21 +35,46 @@ poll.register(sys.stdin, select.POLLIN)
 # leds
 true = Pin(26, Pin.OUT)
 false = Pin(27, Pin.OUT)
+state = Pin(25, Pin.OUT)
 
+
+state.value(0)
 while True:
-    (stat, tag_type) = rdr.request(rdr.REQIDL)
-    if stat == rdr.OK:
-        (stat, raw_uid) = rdr.anticoll()
+    try:
+        (stat, tag_type) = rdr.request(rdr.REQIDL)
         if stat == rdr.OK:
-            print(rdr.read_data())
-            
-            wait = poll.poll()
-            res = wait[0][0].read(1)
-            pantalla.set_string(res)
-            if res == "T":
-                true.value(1)
-            elif res == "F":
-                false.value(1)
-            utime.sleep(2)
-            true.value(0)
-            false.value(0)
+            (stat, raw_uid) = rdr.anticoll()
+            if stat == rdr.OK:
+                print(rdr.read_data())
+                
+                state.value(1)
+                wait = poll.poll()
+                res = wait[0][0].read(32)
+                state.value(0)
+    
+                if res.strip() == "False":
+                    false.value(1)
+                    pantalla.set_string("Acceso Denegado")
+                else:
+                    true.value(1)
+                    pantalla.set_string(res)
+                
+                #rdr.reset()
+                utime.sleep(1)
+                true.value(0)
+                false.value(0)
+                pantalla.clear()
+    except KeyboardInterrupt:
+        break
+    except:
+        state.value(1)
+        utime.sleep(2.5)
+        state.value(0)
+        utime.sleep(0.5)
+        state.value(1)
+        utime.sleep(2.5)
+        state.value(0)
+        utime.sleep(0.5)
+        state.value(1)
+        utime.sleep(2.5)
+        state.value(0)

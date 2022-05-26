@@ -55,10 +55,11 @@ class LcdApi:
         self.cursor_y = 0
         self.implied_newline = False
         self.backlight = True
+        # here
         self.display_off()
         self.backlight_on()
         self.clear()
-        self.hal_write_command(self.LCD_ENTRY_MODE | self.LCD_ENTRY_INC)
+        self.hal_write_command(0x04 | 0x02)
         self.hide_cursor()
         self.display_on()
 
@@ -66,37 +67,37 @@ class LcdApi:
         """Clears the LCD display and moves the cursor to the top left
         corner.
         """
-        self.hal_write_command(self.LCD_CLR)
-        self.hal_write_command(self.LCD_HOME)
+        self.hal_write_command(0x01)
+        self.hal_write_command(0x02)
         self.cursor_x = 0
         self.cursor_y = 0
 
     def show_cursor(self):
         """Causes the cursor to be made visible."""
-        self.hal_write_command(self.LCD_ON_CTRL | self.LCD_ON_DISPLAY |
+        self.hal_write_command(0x08 | 0x04 |
                                self.LCD_ON_CURSOR)
 
     def hide_cursor(self):
         """Causes the cursor to be hidden."""
-        self.hal_write_command(self.LCD_ON_CTRL | self.LCD_ON_DISPLAY)
+        self.hal_write_command(0x08 | 0x04)
 
     def blink_cursor_on(self):
         """Turns on the cursor, and makes it blink."""
-        self.hal_write_command(self.LCD_ON_CTRL | self.LCD_ON_DISPLAY |
+        self.hal_write_command(0x08 | 0x04 |
                                self.LCD_ON_CURSOR | self.LCD_ON_BLINK)
 
     def blink_cursor_off(self):
         """Turns on the cursor, and makes it no blink (i.e. be solid)."""
-        self.hal_write_command(self.LCD_ON_CTRL | self.LCD_ON_DISPLAY |
+        self.hal_write_command(0x08 | 0x04 |
                                self.LCD_ON_CURSOR)
 
     def display_on(self):
         """Turns on (i.e. unblanks) the LCD."""
-        self.hal_write_command(self.LCD_ON_CTRL | self.LCD_ON_DISPLAY)
+        self.hal_write_command(0x08 | 0x04)
 
     def display_off(self):
         """Turns off (i.e. blanks) the LCD."""
-        self.hal_write_command(self.LCD_ON_CTRL)
+        self.hal_write_command(0x08)
 
     def backlight_on(self):
         """Turns the backlight on.
